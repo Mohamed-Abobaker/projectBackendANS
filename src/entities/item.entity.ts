@@ -1,9 +1,9 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('items')
-export class Item {
+export class ItemEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: number
+  id: string
 
   @Column('text')
   title: string;
