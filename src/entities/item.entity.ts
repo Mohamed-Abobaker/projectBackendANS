@@ -16,4 +16,7 @@ export class ItemEntity {
 
   @Column('text')
   image: string;
+
+  @Column({ nullable: true })
+  category: string
 }

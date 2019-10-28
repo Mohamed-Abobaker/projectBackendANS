@@ -3,7 +3,7 @@ import { CategoryService } from './category.service'
 import { CategoryEntity } from 'src/entities/category.entity';
 import { Request, Response } from 'express';
 
-@Controller('category')
+@Controller('categories')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService, ) { }
 
