@@ -14,14 +14,7 @@ export class CategoryController {
     @Param('id') id: 'uuid'
   ): Promise<any> {
     const deleted = await this.categoryService.deleteCategory(id);
-    try {
-      response
-        .status(200)
-        .json({
-          message: deleted
-        })
-    }
-    catch{ }
+    return response.status(deleted.statusCode).json(deleted.data)
   }
 
   @Post()
