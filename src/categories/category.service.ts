@@ -60,6 +60,10 @@ export class CategoryService {
 
 
   async addCategory(payload: any): Promise<CategoryEntity> {
+    const check = await this.categoryEntityRepo
+      .createQueryBuilder().where("LOWER(name) = LOWER(:name)", { name: payload.name }).getMany()
+
+    if (check.length) throw new Error(`Category ${payload.name} already exists. Cannot replicate category`)
 
     const response: InsertResult = await this.categoryEntityRepo
       .createQueryBuilder().insert().values(payload).returning('*').execute();

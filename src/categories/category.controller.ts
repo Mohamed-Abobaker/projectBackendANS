@@ -34,9 +34,19 @@ export class CategoryController {
 
   @Post()
   async addCategory(
-    @Body() payload: any
-  ): Promise<CategoryEntity> {
-    return await this.categoryService.addCategory(payload)
+    @Body() payload: any,
+    @Res() response: Response
+  ): Promise<any> {
+    try {
+      return await this.categoryService.addCategory(payload)
+    }
+    catch (error) {
+      return response.status(405).json({
+        error: {
+          message: error.message
+        }
+      })
+    }
   }
 
 
