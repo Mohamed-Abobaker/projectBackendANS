@@ -9,10 +9,45 @@ export class ItemController {
   constructor(private readonly itemService: ItemService) { }
 
   @Get()
-  async getAllItems(): Promise<ItemEntity[]> {
+  async getAllItems(
+    @Res() response: Response,
+  ): Promise<Response> {
     const items = await this.itemService.getItems()
-    return items
+    return response.status(items.statusCode).json({
+      data: items.data,
+      error: items.error
+    })
   }
+
+
+
+  @Get(':id')
+  async getSingleItem(
+    @Param('id') id: string,
+    @Res() response: Response
+  ) {
+    const item = await this.itemService.getItemById(id)
+    return response.status(item.statusCode).json({
+      data: item.data,
+      error: item.error
+    })
+  }
+
+
+
+  @Get('category/:name')
+  async getItemsByCategory(
+    @Param('name') name: string,
+    @Res() response: Response
+  ) {
+    const itemsList = await this.itemService.getItemsByCategory(name)
+    return response.status(itemsList.statusCode).json({
+      data: itemsList.data,
+      error: itemsList.error
+
+    })
+  }
+
 
 
   @Post()
@@ -20,6 +55,8 @@ export class ItemController {
     const response = await this.itemService.postItem(payload)
     return response
   }
+
+
 
   @Delete(':id')
   async deleteAnItem(
