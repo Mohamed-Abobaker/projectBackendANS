@@ -64,10 +64,13 @@ export class ItemService {
 
   async getItemsByCategory(name: string): Promise<any> {
     try {
-      const category = await this.categoryEntityRepo.find({ where: { name } })
+      // const category = await this.categoryEntityRepo.find({ where: { name: Like(name) } })
+      const category = await this.categoryEntityRepo.createQueryBuilder().where("LOWER(name) = LOWER(:name)", { name })
+        .getMany();
       if (!category.length) throw new Error(`Category ${name} not found!`)
 
-      const items = await this.itemEntityRepo.find({ where: { category: name } })
+      const items = await this.itemEntityRepo.createQueryBuilder().where("LOWER(category) = LOWER(:name)", { name })
+        .getMany();
       if (!items.length) throw new Error(`No items found in the ${name} category `)
       return {
         statusCode: 200,
