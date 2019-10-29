@@ -7,15 +7,30 @@ import { Request, Response } from 'express';
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService, ) { }
 
-  @Delete(':id')
-  async deleteCategory(
+  @Get()
+  async getCategories(
     @Req() request: Request,
     @Res() response: Response,
-    @Param('id') id: 'uuid'
-  ): Promise<any> {
-    const deleted = await this.categoryService.deleteCategory(id);
-    return response.status(deleted.statusCode).json(deleted.data)
+  ): Promise<Response> {
+    const categories = await this.categoryService.getCategories()
+    return response.status(categories.statusCode).json({
+      data: categories.data,
+      error: categories.error
+    })
   }
+
+  @Get(':id')
+  async getCategory(
+    @Param('id') id: string,
+    @Res() response: Response
+  ): Promise<Response> {
+    const category = await this.categoryService.getSingleCategory(id);
+    return response.status(category.statusCode).json({
+      data: category.data,
+      error: category.error
+    })
+  }
+
 
   @Post()
   async addCategory(
@@ -24,35 +39,14 @@ export class CategoryController {
     return await this.categoryService.addCategory(payload)
   }
 
-  @Get()
-  async getCategories(
+
+  @Delete(':id')
+  async deleteCategory(
     @Req() request: Request,
     @Res() response: Response,
-    @Param('id') id: string
-  ): Promise<Response> {
-
-    try {
-
-      console.log(request.params);
-
-      const categories = await this.categoryService.getCategories()
-      return response
-        .status(200)
-        .json({
-          data: categories,
-          error: null
-        });
-    }
-    catch (error) {
-      return response
-        .status(501)
-        .json({
-          data: null,
-          error: {
-            message: error.message,
-            code: error.code
-          }
-        });
-    }
+    @Param('id') id: 'uuid'
+  ): Promise<any> {
+    const deleted = await this.categoryService.deleteCategory(id);
+    return response.status(deleted.statusCode).json(deleted.data)
   }
 }

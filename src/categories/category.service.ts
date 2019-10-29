@@ -11,11 +11,51 @@ export class CategoryService {
   ) { }
 
 
-  async getCategories(): Promise<CategoryEntity[]> {
+  async getCategories(): Promise<any> {
     // throw new Error('No database connection');
 
-    const results = await this.categoryEntityRepo.find();
-    return results;
+
+    try {
+      const results = await this.categoryEntityRepo.find();
+      if (!results.length) throw new Error('No categories found')
+      return {
+        statusCode: 200,
+        data: results,
+        error: null
+      }
+    }
+    catch (error) {
+      return {
+        statusCode: 404,
+        data: null,
+        error: {
+          message: error.message
+        }
+      }
+    }
+  }
+
+
+  async getSingleCategory(id: string): Promise<any> {
+
+    try {
+      const category = await this.categoryEntityRepo.find({ where: { id: id } });
+      if (category[0] == null) throw new Error(`No category found with ID ${id}`)
+      return {
+        statusCode: 200,
+        data: category,
+        error: null
+      }
+    }
+    catch (error) {
+      return {
+        statusCode: 404,
+        data: null,
+        error: {
+          message: error.message
+        }
+      }
+    }
   }
 
 
