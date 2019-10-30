@@ -8,15 +8,15 @@ export class ItemEntity {
   @Column('text')
   title: string;
 
-  @Column('text')
+  @Column({ nullable: true })
   description: string;
 
-  @Column('text')
+  @Column({ nullable: true })
   priority: string;
 
-  @Column('text')
+  @Column({ nullable: true })
   image: string;
 
-  @Column({ nullable: true })
+  @Column('text')
   category: string
 }
