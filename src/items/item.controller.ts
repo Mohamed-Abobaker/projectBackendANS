@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Delete, Param, Res } from '@nestjs/common'
+import { Controller, Get, Post, Body, Delete, Param, Res, Patch } from '@nestjs/common'
 import { ItemService } from './item.service'
 import { ItemEntity } from 'src/entities/item.entity'
 import { Request, Response } from 'express';
@@ -54,6 +54,19 @@ export class ItemController {
   async postNewItem(@Body() payload: any): Promise<ItemEntity> {
     const response = await this.itemService.postItem(payload)
     return response
+  }
+
+  @Patch(':id')
+  async patchItem(
+    @Body() payload: any,
+    @Param('id') id: string,
+    @Res() response: Response
+  ): Promise<any> {
+    const update = await this.itemService.patchItem(payload, id)
+    return response.status(update.statusCode).json({
+      data: update.data,
+      error: update.error
+    })
   }
 
 

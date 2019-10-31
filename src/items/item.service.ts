@@ -100,6 +100,44 @@ export class ItemService {
 
 
 
+  async patchItem(payload: any, id: string): Promise<any> {
+
+    try {
+      const item = await this.itemEntityRepo.find({ where: { id } })
+      if (!item.length) throw new Error(`No item found with ID ${id}`)
+
+      const copiedItem = { ...item[0] }
+      const updatedItem = {};
+      for (var key in copiedItem) {
+        if (payload[key]) {
+          updatedItem[key] = payload[key]
+        } else {
+          updatedItem[key] = copiedItem[key]
+        }
+      }
+      // const patch = jsonMergePatch.generate(item[0], payload);
+      // const updates = Object.keys(patch).filter(key => patch[key] != null);
+      const updated = await this.itemEntityRepo
+        .createQueryBuilder().update().set(updatedItem).where('"id" = :id', { id }).returning('*').execute();
+
+      return {
+        statusCode: 200,
+        data: updated.raw[0],
+        error: null
+      }
+
+    }
+    catch (error) {
+      return {
+        statusCode: 400,
+        data: null,
+        error: error.message
+      }
+    }
+  }
+
+
+
   async deleteItem(id: string): Promise<any> {
     try {
       const item = await this.itemEntityRepo
