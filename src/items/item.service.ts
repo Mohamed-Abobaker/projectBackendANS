@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { ItemEntity } from '../entities/item.entity'
 import { Repository, InsertResult } from 'typeorm'
 import { CategoryEntity } from '../entities/category.entity';
+import * as _ from 'lodash'
+import { CreateItemDto } from './item.dto'
 
 @Injectable()
 export class ItemService {
@@ -18,7 +20,7 @@ export class ItemService {
 
   async getItems(): Promise<any> {
     try {
-      const items = await this.itemEntityRepo.find();
+      const items: ItemEntity[] = await this.itemEntityRepo.find();
       if (!items.length) throw new Error('No items found')
       return {
         statusCode: 200,
@@ -41,7 +43,7 @@ export class ItemService {
 
   async getItemById(id: string) {
     try {
-      const item = await this.itemEntityRepo.find({ where: { id } })
+      const item: ItemEntity[] = await this.itemEntityRepo.find({ where: { id } })
       if (!item.length) throw new Error(`No item found with ID ${id}`)
 
       return {
@@ -65,11 +67,11 @@ export class ItemService {
   async getItemsByCategory(name: string): Promise<any> {
     try {
       // const category = await this.categoryEntityRepo.find({ where: { name: Like(name) } })
-      const category = await this.categoryEntityRepo.createQueryBuilder().where("LOWER(name) = LOWER(:name)", { name })
-        .getMany();
-      if (!category.length) throw new Error(`Category ${name} not found!`)
+      const category: CategoryEntity = await this.categoryEntityRepo.createQueryBuilder().where("LOWER(name) = LOWER(:name)", { name })
+        .getOne();
+      if (category == null) throw new Error(`Category ${name} not found!`)
 
-      const items = await this.itemEntityRepo.createQueryBuilder().where("LOWER(category) = LOWER(:name)", { name })
+      const items: ItemEntity[] = await this.itemEntityRepo.createQueryBuilder().where("LOWER(category) = LOWER(:name)", { name })
         .getMany();
       if (!items.length) throw new Error(`No items found in the ${name} category `)
       return {
@@ -90,7 +92,7 @@ export class ItemService {
 
 
 
-  async postItem(payload: any): Promise<ItemEntity> {
+  async postItem(payload: CreateItemDto): Promise<ItemEntity> {
     const response: InsertResult = await this.itemEntityRepo
       .createQueryBuilder().insert().values(payload).returning('*').execute()
 
@@ -115,6 +117,8 @@ export class ItemService {
           updatedItem[key] = copiedItem[key]
         }
       }
+
+      if (_.isEqual(copiedItem, updatedItem)) throw new Error('No changes detected in patch request')
       // const patch = jsonMergePatch.generate(item[0], payload);
       // const updates = Object.keys(patch).filter(key => patch[key] != null);
       const updated = await this.itemEntityRepo
