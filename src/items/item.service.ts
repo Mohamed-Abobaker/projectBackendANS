@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { ItemEntity } from '../entities/item.entity'
-import { Repository, InsertResult } from 'typeorm'
+import { Repository, InsertResult, Connection } from 'typeorm'
 import { CategoryEntity } from '../entities/category.entity';
 import * as _ from 'lodash'
-import { CreateItemDto } from './item.dto'
+import { CreateItemDto, PatchItemDto } from './item.dto'
 
 @Injectable()
 export class ItemService {
@@ -64,19 +64,18 @@ export class ItemService {
   }
 
 
-  async getItemsByCategory(name: string): Promise<any> {
+  async getItemsByCategory(id: string): Promise<any> {
     try {
       // const category = await this.categoryEntityRepo.find({ where: { name: Like(name) } })
-      const category: CategoryEntity = await this.categoryEntityRepo.createQueryBuilder().where("LOWER(name) = LOWER(:name)", { name })
-        .getOne();
-      if (category == null) throw new Error(`Category ${name} not found!`)
+      const category: CategoryEntity[] = await this.categoryEntityRepo.find({ where: { id: id } });
+      if (!category.length) throw new Error(`Category ${id} not found! Please use a valid category ID`)
 
-      const items: ItemEntity[] = await this.itemEntityRepo.createQueryBuilder().where("LOWER(category) = LOWER(:name)", { name })
-        .getMany();
-      if (!items.length) throw new Error(`No items found in the ${name} category `)
+      const items: CategoryEntity[] = await this.categoryEntityRepo
+        .find({ relations: ['items'], where: { id } });
+      if (!items[0].items.length) throw new Error(`No items found in the ${id} category `)
       return {
         statusCode: 200,
-        data: items,
+        data: items[0].items,
         error: null
       }
     }
@@ -92,17 +91,33 @@ export class ItemService {
 
 
 
-  async postItem(payload: CreateItemDto): Promise<ItemEntity> {
-    const response: InsertResult = await this.itemEntityRepo
-      .createQueryBuilder().insert().values(payload).returning('*').execute()
+  async postItem(payload: any): Promise<any> {
+    try {
+      const chosenCat: CategoryEntity[] = await this.categoryEntityRepo.find({ where: { id: payload.category.id } })
+      if (!chosenCat.length) throw new Error('Category not recognized. Please post to a valid category.')
 
-    const createdItem: ItemEntity = response.raw[0];
-    return createdItem
+      const response: InsertResult = await this.itemEntityRepo
+        .createQueryBuilder().insert().values(payload).returning('*').execute()
+
+      const createdItem: ItemEntity = response.raw[0];
+      return {
+        statusCode: 201,
+        data: createdItem,
+        error: null
+      }
+    }
+    catch (error) {
+      return {
+        statusCode: 404,
+        data: null,
+        error: error.message
+      }
+    }
   }
 
 
 
-  async patchItem(payload: any, id: string): Promise<any> {
+  async patchItem(payload: PatchItemDto, id: string): Promise<any> {
 
     try {
       const item = await this.itemEntityRepo.find({ where: { id } })
