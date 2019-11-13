@@ -5,7 +5,6 @@ export class CreateItemDto {
   readonly image: string;
   readonly description: string;
   readonly category: CategoryEntity;
-  readonly categoryName: string;
 }
 
 export class PatchItemDto {

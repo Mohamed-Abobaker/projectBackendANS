@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Delete, Param, Res, Patch } from '@nestjs/
 import { ItemService } from './item.service'
 import { ItemEntity } from '../entities/item.entity'
 import { Request, Response } from 'express';
-import { CreateItemDto } from './item.dto';
+import { CreateItemDto, PatchItemDto } from './item.dto';
 import { InjectRepository } from '@nestjs/typeorm'
 import { Connection, Repository } from 'typeorm';
 import { CategoryEntity } from '../entities/category.entity';
@@ -94,7 +94,7 @@ export class ItemController {
 
   @Patch(':id')
   async patchItem(
-    @Body() payload: any,
+    @Body() payload: PatchItemDto,
     @Param('id') id: string,
     @Res() response: Response
   ): Promise<Response> {

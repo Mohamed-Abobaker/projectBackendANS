@@ -64,6 +64,7 @@ export class ItemService {
   }
 
 
+
   async getItemsByCategory(id: string): Promise<any> {
     try {
       // const category = await this.categoryEntityRepo.find({ where: { name: Like(name) } })
@@ -90,12 +91,12 @@ export class ItemService {
 
 
 
-
   async postItem(payload: any): Promise<any> {
     try {
       const chosenCat: CategoryEntity[] = await this.categoryEntityRepo.find({ where: { id: payload.category.id } })
       if (!chosenCat.length) throw new Error('Category not recognized. Please post to a valid category.')
 
+      payload.categoryName = chosenCat[0].name
       const response: InsertResult = await this.itemEntityRepo
         .createQueryBuilder().insert().values(payload).returning('*').execute()
 
@@ -118,7 +119,6 @@ export class ItemService {
 
 
   async patchItem(payload: PatchItemDto, id: string): Promise<any> {
-
     try {
       const item = await this.itemEntityRepo.find({ where: { id } })
       if (!item.length) throw new Error(`No item found with ID ${id}`)
