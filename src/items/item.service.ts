@@ -4,7 +4,7 @@ import { ItemEntity } from '../entities/item.entity'
 import { Repository, InsertResult, Connection } from 'typeorm'
 import { CategoryEntity } from '../entities/category.entity';
 import * as _ from 'lodash'
-import { CreateItemDto, PatchItemDto } from './item.dto'
+import { CreateItemDto, PatchItemDto, responseObj } from './item.dto'
 
 @Injectable()
 export class ItemService {
@@ -18,7 +18,7 @@ export class ItemService {
 
 
 
-  async getItems(): Promise<any> {
+  async getItems(): Promise<responseObj> {
     try {
       const items: ItemEntity[] = await this.itemEntityRepo.find();
       if (!items.length) throw new Error('No items found')
@@ -41,7 +41,7 @@ export class ItemService {
 
 
 
-  async getItemById(id: string) {
+  async getItemById(id: string): Promise<responseObj> {
     try {
       const item: ItemEntity[] = await this.itemEntityRepo.find({ where: { id } })
       if (!item.length) throw new Error(`No item found with ID ${id}`)
@@ -65,7 +65,7 @@ export class ItemService {
 
 
 
-  async getItemsByCategory(id: string): Promise<any> {
+  async getItemsByCategory(id: string): Promise<responseObj> {
     try {
       // const category = await this.categoryEntityRepo.find({ where: { name: Like(name) } })
       const category: CategoryEntity[] = await this.categoryEntityRepo.find({ where: { id: id } });
@@ -91,14 +91,14 @@ export class ItemService {
 
 
 
-  async postItem(payload: any): Promise<any> {
+  async postItem(payload: CreateItemDto): Promise<responseObj> {
     try {
       const chosenCat: CategoryEntity[] = await this.categoryEntityRepo.find({ where: { id: payload.category.id } })
       if (!chosenCat.length) throw new Error('Category not recognized. Please post to a valid category.')
 
-      payload.categoryName = chosenCat[0].name
+      const newItem = { ...payload, categoryName: chosenCat[0].name }
       const response: InsertResult = await this.itemEntityRepo
-        .createQueryBuilder().insert().values(payload).returning('*').execute()
+        .createQueryBuilder().insert().values(newItem).returning('*').execute()
 
       const createdItem: ItemEntity = response.raw[0];
       return {
@@ -118,7 +118,7 @@ export class ItemService {
 
 
 
-  async patchItem(payload: PatchItemDto, id: string): Promise<any> {
+  async patchItem(payload: PatchItemDto, id: string): Promise<responseObj> {
     try {
       const item = await this.itemEntityRepo.find({ where: { id } })
       if (!item.length) throw new Error(`No item found with ID ${id}`)
@@ -157,20 +157,13 @@ export class ItemService {
 
 
 
-  async deleteItem(id: string): Promise<any> {
+  async deleteItem(id: string): Promise<responseObj> {
     try {
-      const item = await this.itemEntityRepo
+      const item: ItemEntity = await this.itemEntityRepo
         .createQueryBuilder().select('*')
         .where('"id"=:id', { id }).execute();
 
-      if (item[0] == null) {
-        return {
-          statusCode: 404,
-          data: {
-            message: `No item found with ID ${id}`
-          }
-        }
-      }
+      if (item[0] == null) throw new Error(`No item found with ID ${id}`)
 
       const response = await this.itemEntityRepo
         .createQueryBuilder().delete()
@@ -181,15 +174,15 @@ export class ItemService {
         data: {
           message: `Item ID ${id} successfully deleted`,
           other: response.raw[0]
-        }
+        },
+        error: null
       }
     }
     catch (error) {
       return {
         statusCode: 500,
-        data: {
-          message: error.message
-        }
+        data: null,
+        error: error.message
       }
     }
   }

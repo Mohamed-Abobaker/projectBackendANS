@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Delete, Param, Res, Patch } from '@nestjs/
 import { ItemService } from './item.service'
 import { ItemEntity } from '../entities/item.entity'
 import { Request, Response } from 'express';
-import { CreateItemDto, PatchItemDto } from './item.dto';
+import { CreateItemDto, PatchItemDto, responseObj } from './item.dto';
 import { InjectRepository } from '@nestjs/typeorm'
 import { Connection, Repository } from 'typeorm';
 import { CategoryEntity } from '../entities/category.entity';
@@ -25,7 +25,7 @@ export class ItemController {
   async getAllItems(
     @Res() response: Response,
   ): Promise<Response> {
-    const items = await this.itemService.getItems()
+    const items: responseObj = await this.itemService.getItems()
     return response.status(items.statusCode).json({
       data: items.data,
       error: items.error
@@ -113,6 +113,9 @@ export class ItemController {
     @Param('id') id: string
   ): Promise<Response> {
     const deleted = await this.itemService.deleteItem(id)
-    return response.status(deleted.statusCode).json(deleted.data)
+    return response.status(deleted.statusCode).json({
+      data: deleted.data,
+      error: deleted.error,
+    })
   }
 }

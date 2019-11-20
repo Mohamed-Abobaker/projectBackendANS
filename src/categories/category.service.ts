@@ -13,8 +13,6 @@ export class CategoryService {
 
   async getCategories(): Promise<any> {
     // throw new Error('No database connection');
-
-
     try {
       const results = await this.categoryEntityRepo.find();
       if (!results.length) throw new Error('No categories found')

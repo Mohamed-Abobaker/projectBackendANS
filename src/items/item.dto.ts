@@ -16,6 +16,6 @@ export class PatchItemDto {
 
 export class responseObj {
   readonly statusCode: number;
-  readonly data: Object;
-  readonly error: Object;
+  readonly data: Object | null;
+  readonly error: Object | null;
 }
