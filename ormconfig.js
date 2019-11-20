@@ -1,6 +1,6 @@
 
-// const inProd = process.env.NODE_ENV
-const inProd = true
+const inProd = process.env.NODE_ENV
+// const inProd = true
 console.log(process.env)
 
 // port: 5432,
