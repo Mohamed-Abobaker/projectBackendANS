@@ -1,6 +1,7 @@
 const { hostName, dataBaseName, password, userName } = require('./userDetails')
 
-const inProd = process.env.NODE_ENV
+// const inProd = process.env.NODE_ENV
+const inProd = true
 const host = inProd ? 'ec2-54-243-44-102.compute-1.amazonaws.com' : hostName;
 const database = inProd ? 'devhemnpqs7jqr' : dataBaseName;
 const user = inProd ? 'atovecnpivswjq' : userName;
