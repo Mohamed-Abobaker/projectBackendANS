@@ -11,7 +11,6 @@ const passwordNow = inProd ? '51a46280f1e23d8e82ca8b03db59333cf604df69014275aa12
 module.exports = {
   "type": "postgres",
   "host": host,
-  "url": 'postgres://atovecnpivswjq:51a46280f1e23d8e82ca8b03db59333cf604df69014275aa1207378f3d10d7a2@ec2-54-243-44-102.compute-1.amazonaws.com:5432/devhemnpqs7jqr',
   "port": 5432,
   "username": user,
   "password": passwordNow,
