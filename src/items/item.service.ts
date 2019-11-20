@@ -84,7 +84,9 @@ export class ItemService {
       return {
         statusCode: 404,
         data: null,
-        error: error.message
+        error: {
+          message: error.message
+        }
       }
     }
   }
@@ -111,7 +113,9 @@ export class ItemService {
       return {
         statusCode: 404,
         data: null,
-        error: error.message
+        error: {
+          message: error.message
+        }
       }
     }
   }
@@ -150,7 +154,9 @@ export class ItemService {
       return {
         statusCode: 400,
         data: null,
-        error: error.message
+        error: {
+          message: error.message
+        }
       }
     }
   }
@@ -182,7 +188,9 @@ export class ItemService {
       return {
         statusCode: 500,
         data: null,
-        error: error.message
+        error: {
+          message: error.message
+        }
       }
     }
   }

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryEntity } from '../entities/category.entity'
 import { Repository, InsertResult } from 'typeorm';
+import { responseObj } from './category.dto'
 
 @Injectable()
 export class CategoryService {
@@ -11,10 +12,10 @@ export class CategoryService {
   ) { }
 
 
-  async getCategories(): Promise<any> {
+  async getCategories(): Promise<responseObj> {
     // throw new Error('No database connection');
     try {
-      const results = await this.categoryEntityRepo.find();
+      const results: CategoryEntity[] = await this.categoryEntityRepo.find();
       if (!results.length) throw new Error('No categories found')
       return {
         statusCode: 200,
@@ -34,10 +35,9 @@ export class CategoryService {
   }
 
 
-  async getSingleCategory(id: string): Promise<any> {
-
+  async getSingleCategory(id: string): Promise<responseObj> {
     try {
-      const category = await this.categoryEntityRepo.find({ where: { id: id } });
+      const category: CategoryEntity[] = await this.categoryEntityRepo.find({ where: { id: id } });
       if (category[0] == null) throw new Error(`No category found with ID ${id}`)
       return {
         statusCode: 200,
@@ -57,35 +57,43 @@ export class CategoryService {
   }
 
 
-  async addCategory(payload: any): Promise<CategoryEntity> {
-    const check = await this.categoryEntityRepo
-      .createQueryBuilder().where("LOWER(name) = LOWER(:name)", { name: payload.name }).getMany()
+  async addCategory(payload: CategoryEntity): Promise<responseObj> {
+    try {
+      const check = await this.categoryEntityRepo
+        .createQueryBuilder().where("LOWER(name) = LOWER(:name)", { name: payload.name }).getMany()
 
-    if (check.length) throw new Error(`Category ${payload.name} already exists. Cannot replicate category`)
+      if (check.length) throw new Error(`Category ${payload.name} already exists. Cannot replicate category`)
 
-    const response: InsertResult = await this.categoryEntityRepo
-      .createQueryBuilder().insert().values(payload).returning('*').execute();
+      const response: InsertResult = await this.categoryEntityRepo
+        .createQueryBuilder().insert().values(payload).returning('*').execute();
 
-    const createdCat: CategoryEntity = response.raw[0];
-    return createdCat;
+      const createdCat: CategoryEntity = response.raw[0];
+
+      return {
+        statusCode: 201,
+        data: createdCat,
+        error: null
+      }
+    }
+    catch (error) {
+      return {
+        statusCode: 404,
+        data: null,
+        error: {
+          message: error.message
+        }
+      }
+    }
   }
 
 
 
-  async deleteCategory(id: string): Promise<any> {
-
+  async deleteCategory(id: string): Promise<responseObj> {
     try {
       const category: CategoryEntity[] = await this.categoryEntityRepo
         .createQueryBuilder().select('*').where('"id" = :id', { id }).execute();
 
-      if (category[0] == null) {
-        return {
-          statusCode: 404,
-          data: {
-            message: `No category found with ID ${id}`
-          }
-        }
-      }
+      if (category[0] == null) throw new Error(`No category found with ID ${id}`)
 
       const where = 'id = :id';
       const query = {
@@ -94,19 +102,20 @@ export class CategoryService {
       const response = await this.categoryEntityRepo
         .createQueryBuilder().delete().where(where, query).execute()
 
-
       return {
         statusCode: 200,
         data: {
           message: `Category ID ${id} successfully deleted`,
           other: response.raw[0]
-        }
+        },
+        error: null
       }
     }
     catch (error) {
       return {
         statusCode: 500,
-        data: {
+        data: null,
+        error: {
           message: error.message
         }
       }
