@@ -63,7 +63,7 @@ export class CategoryService {
         .createQueryBuilder().where("LOWER(name) = LOWER(:name)", { name: payload.name }).getMany()
 
       if (check.length) throw new Error(`Category ${payload.name} already exists. Cannot replicate category`)
-
+      payload.name = payload.name.charAt(0).toUpperCase() + payload.name.slice(1)
       const response: InsertResult = await this.categoryEntityRepo
         .createQueryBuilder().insert().values(payload).returning('*').execute();
 

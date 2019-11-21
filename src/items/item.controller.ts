@@ -8,7 +8,6 @@ import { Connection, Repository } from 'typeorm';
 import { CategoryEntity } from '../entities/category.entity';
 
 
-
 @Controller('items')
 export class ItemController {
   constructor(
